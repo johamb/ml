@@ -9,7 +9,11 @@ def testFunction(data):
     datasum = np.sum(data)
     return datasum
 
+def k_means(k, distance):
+    return
 
+def L1(i, j, data):
+    return
 
 # main program code
 
