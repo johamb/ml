@@ -1,5 +1,7 @@
 package em;
 
+import java.util.Arrays;
+
 public class EM {
 	private static final double EPS = 0.01; // Stopping delta
 	
@@ -58,7 +60,7 @@ public class EM {
 		
 		// Initialize the Clusters
 		for (int i = 0; i < clusters.length; i++){
-			clusters[i] = new Cluster(0, 1, 1);
+			clusters[i] = new Cluster(i, 1, 0.5);
 		}
 			
 		// Iterate
@@ -84,8 +86,8 @@ public class EM {
 		for (double xi: x) {
 			double sumDistributions = 0;
 
-			for (Cluster ci: clusters) {
-				sumDistributions += computeProbability(xi, ci.mean, ci.variance);
+			for (Cluster cj: clusters) {
+				sumDistributions += computeProbability(xi, cj.mean, cj.variance);
 			}
 
 			sumLogs += Math.log(sumDistributions);
@@ -116,8 +118,46 @@ public class EM {
 		}
 	}
 	
-	private static void doMStep(double[] x, Cluster[] cluster, double[][] r) {
-		// TODO
+	private static void doMStep(double[] x, Cluster[] clusters, double[][] r) {
+
+		Cluster[] newClusters = new Cluster[clusters.length];
+
+		// compute responsibility for each cluster
+		double[] responsibilities = new double[clusters.length];
+		for (int j = 0; j < clusters.length; j++) {
+			Cluster cj = clusters[j];
+
+			for (int i = 0; i < r.length; i++) {
+				responsibilities[j] += r[i][j];
+			}
+		}
+
+		double sumResponsibilities = Arrays.stream(responsibilities).sum();
+
+		// update parameters for each cluster
+		for (int j = 0; j < clusters.length; j++) {
+
+			// compute new weight
+			Cluster cj = clusters[j];
+			double responsibility = responsibilities[j];
+			cj.weight = responsibility / sumResponsibilities;
+
+			// compute new mean
+			double sum1 = 0;
+			for (int i = 0; i < r.length; i++) {
+				sum1 += r[i][j] * x[i];
+			}
+			cj.mean = 1 / responsibility * sum1;
+
+			// compute new variance
+			double sum2 = 0;
+			for (int i = 0; i < r.length; i++) {
+				sum2 += r[i][j] * Math.pow(x[i] - cj.mean, 2);
+			}
+			cj.variance = 1 / responsibility * sum2;
+
+			newClusters[j] = cj;
+		}
 	}
 	
     private static void printDebug(int iteration, double L, Cluster[] cluster, double[][] r) {
