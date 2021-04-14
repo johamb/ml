@@ -85,8 +85,7 @@ public class EM {
 			double sumDistributions = 0;
 
 			for (Cluster ci: clusters) {
-				double sigma = Math.sqrt(ci.variance);
-				sumDistributions += 1 / ((sigma * Math.sqrt(2 * ci.weight))) * Math.exp(-0.5 * (Math.pow((xi - ci.mean) / sigma, 2)));
+				sumDistributions += computeProbability(xi, ci.mean, ci.variance);
 			}
 
 			sumLogs += Math.log(sumDistributions);
@@ -94,9 +93,27 @@ public class EM {
 
 		return sumLogs;
 	}
-	
-	private static void doEStep(double[] x, Cluster[] cluster, double[][] r) {
-		// TODO
+
+	private static double computeProbability(double x, double mean, double variance) {
+		double deviation = Math.sqrt(variance);
+		return 1 / ((deviation * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * (Math.pow((x - mean) / deviation, 2)));
+	}
+
+	private static void doEStep(double[] x, Cluster[] clusters, double[][] r) {
+		for (int i = 0; i < x.length; i++) {
+			double xi = x[i];
+			for (int j = 0; j < clusters.length; j++) {
+				Cluster cj = clusters[j];
+				double numerator = cj.weight * computeProbability(xi, cj.mean, cj.variance);
+
+				double denominator = 0;
+				for (Cluster ci: clusters){
+					denominator += ci.weight * computeProbability(xi, ci.mean, ci.variance);
+				}
+
+				r[i][j] = numerator / denominator;
+			}
+		}
 	}
 	
 	private static void doMStep(double[] x, Cluster[] cluster, double[][] r) {
