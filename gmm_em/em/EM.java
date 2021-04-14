@@ -78,9 +78,21 @@ public class EM {
 		return clusters;
 	}
 	
-	private static double computeL(double[] x, Cluster[] cluster) {
-		// TODO
-		return 0;
+	private static double computeL(double[] x, Cluster[] clusters) {
+		double sumLogs = 0;
+
+		for (double xi: x) {
+			double sumDistributions = 0;
+
+			for (Cluster ci: clusters) {
+				double sigma = Math.sqrt(ci.variance);
+				sumDistributions += 1 / ((sigma * Math.sqrt(2 * ci.weight))) * Math.exp(-0.5 * (Math.pow((xi - ci.mean) / sigma, 2)));
+			}
+
+			sumLogs += Math.log(sumDistributions);
+		}
+
+		return sumLogs;
 	}
 	
 	private static void doEStep(double[] x, Cluster[] cluster, double[][] r) {
