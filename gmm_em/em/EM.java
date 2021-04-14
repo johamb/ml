@@ -57,7 +57,9 @@ public class EM {
 		Cluster[] clusters = new Cluster[k];
 		
 		// Initialize the Clusters
-		// TODO
+		for (int i = 0; i < clusters.length; i++){
+			clusters[i] = new Cluster(0, 1, 1);
+		}
 			
 		// Iterate
 		int iteration = 0;
